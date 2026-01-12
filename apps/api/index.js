@@ -16,9 +16,13 @@ const PORT = process.env.PORT || 3000;
 
 const openai = new OpenAI({
   baseURL: "https://openrouter.ai/api/v1",
-  apiKey: process.env.OPENROUTER_API_KEY,
-  timeout: 60000, // 60 second timeout for slow free models
-  maxRetries: 2,  // Retry on connection failures
+  apiKey: (process.env.OPENROUTER_API_KEY || '').trim(),
+  defaultHeaders: {
+    "HTTP-Referer": "https://sunguraai.netlify.app", // Required for some free models
+    "X-Title": "Sungura AI Study Buddy",
+  },
+  timeout: 60000,
+  maxRetries: 2,
 });
 
 // Middleware
@@ -173,8 +177,8 @@ ${styleInstruction}
     }
 
     // Default to a multi-modal model if an image is sent
-    // Using gemini-flash-1.5:free as it is significantly faster for Netlify's 10s timeout
-    const model = image ? "anthropic/claude-3-sonnet" : "google/gemini-flash-1.5:free";
+    // Switching to the specific free Gemini 2.0 Flash model ID
+    const model = image ? "anthropic/claude-3-sonnet" : "google/gemini-2.0-flash-exp:free";
 
     console.log(`[POST /chat] Calling model: ${model} with message length: ${message?.length || 0}`);
 
@@ -192,8 +196,11 @@ ${styleInstruction}
       usage: completion.usage
     });
   } catch (error) {
-    console.error('Error calling OpenRouter:', error);
-    res.status(500).json({ error: 'Failed to get response from AI' });
+    console.error('Error calling OpenRouter:', error.message);
+    res.status(500).json({
+      error: 'Failed to get response from AI',
+      details: error.message
+    });
   }
 });
 
