@@ -19,17 +19,20 @@ app.use(cors());
 app.use(compression());
 app.use(express.json());
 
+// Router
+const router = express.Router();
+
 // Routes
-app.get('/', (req, res) => {
+router.get('/', (req, res) => {
   res.send('Sungura API is running 🐰');
 });
 
-app.get('/health', (req, res) => {
+router.get('/health', (req, res) => {
   res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
 // Simple Browser Test Page
-app.get('/chat', (req, res) => {
+router.get('/chat', (req, res) => {
   res.send(`
     <html>
       <head>
@@ -90,7 +93,7 @@ app.get('/chat', (req, res) => {
   `);
 });
 
-app.post('/chat', async (req, res) => {
+router.post('/chat', async (req, res) => {
   const { message, image, courseContext, learningStyle } = req.body;
 
   if (!message && !image) {
@@ -166,6 +169,10 @@ ${styleInstruction}
     res.status(500).json({ error: 'Failed to get response from AI' });
   }
 });
+
+// Mount router at root AND /api to handle Netlify rewrites correctly
+app.use('/', router);
+app.use('/api', router);
 
 // Export the app for serverless
 module.exports.app = app;
