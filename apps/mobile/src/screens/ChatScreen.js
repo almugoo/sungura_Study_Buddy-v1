@@ -8,8 +8,8 @@ import * as ImagePicker from 'expo-image-picker';
 import { useUser } from '../context/UserContext';
 import MermaidRenderer from '../components/MermaidRenderer';
 
-// Target Your Local API (Replace with your IP for physical devices)
-const API_URL = 'http://localhost:3000';
+// Target Local API in Dev, Relative Path in Prod (Netlify)
+const API_URL = __DEV__ ? 'http://localhost:3000' : '/api';
 
 const ChatScreen = ({ route, navigation }) => {
     const theme = useTheme();
@@ -355,12 +355,64 @@ const userMarkdownStyles = StyleSheet.create({
 });
 
 const aiMarkdownStyles = StyleSheet.create({
-    body: { color: 'black' },
-    paragraph: { marginBottom: 8 },
-    strong: { fontWeight: 'bold' },
-    table: { borderWidth: 1, borderColor: '#ddd', marginVertical: 8 },
-    tableHeaderContent: { fontWeight: 'bold', padding: 4 },
-    tableRowContent: { padding: 4 },
+    body: { color: '#1a1a1a', fontSize: 15, lineHeight: 22 },
+    paragraph: { marginBottom: 12, marginTop: 0 },
+    strong: { fontWeight: 'bold', color: '#000' },
+    em: { fontStyle: 'italic' },
+    // Headers
+    heading1: { fontSize: 22, fontWeight: 'bold', marginTop: 16, marginBottom: 8, color: '#6B4EFF' },
+    heading2: { fontSize: 20, fontWeight: 'bold', marginTop: 14, marginBottom: 6, color: '#6B4EFF' },
+    heading3: { fontSize: 18, fontWeight: 'bold', marginTop: 12, marginBottom: 6, color: '#333' },
+    heading4: { fontSize: 16, fontWeight: 'bold', marginTop: 10, marginBottom: 4, color: '#444' },
+    // Lists
+    bullet_list: { marginVertical: 8 },
+    ordered_list: { marginVertical: 8 },
+    list_item: { marginBottom: 6, flexDirection: 'row' },
+    bullet_list_icon: { marginRight: 8, color: '#6B4EFF' },
+    ordered_list_icon: { marginRight: 8, color: '#6B4EFF', fontWeight: 'bold' },
+    // Code
+    code_inline: {
+        backgroundColor: '#f0f0f0',
+        paddingHorizontal: 6,
+        paddingVertical: 2,
+        borderRadius: 4,
+        fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+        fontSize: 13,
+        color: '#d63384'
+    },
+    code_block: {
+        backgroundColor: '#1e1e1e',
+        padding: 12,
+        borderRadius: 8,
+        marginVertical: 10,
+        overflow: 'hidden'
+    },
+    fence: {
+        backgroundColor: '#1e1e1e',
+        padding: 12,
+        borderRadius: 8,
+        marginVertical: 10
+    },
+    // Table
+    table: { borderWidth: 1, borderColor: '#ddd', marginVertical: 12, borderRadius: 8, overflow: 'hidden' },
+    thead: { backgroundColor: '#f5f5f5' },
+    th: { padding: 8, fontWeight: 'bold', borderBottomWidth: 1, borderColor: '#ddd' },
+    tr: { borderBottomWidth: 1, borderColor: '#eee' },
+    td: { padding: 8 },
+    // Blockquote  
+    blockquote: {
+        borderLeftWidth: 4,
+        borderLeftColor: '#6B4EFF',
+        paddingLeft: 12,
+        marginVertical: 8,
+        backgroundColor: '#f9f9ff',
+        paddingVertical: 8,
+        borderRadius: 4
+    },
+    // HR
+    hr: { backgroundColor: '#ddd', height: 1, marginVertical: 16 },
+    // Link
+    link: { color: '#6B4EFF', textDecorationLine: 'underline' },
 });
 
 export default ChatScreen;
