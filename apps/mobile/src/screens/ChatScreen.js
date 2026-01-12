@@ -83,7 +83,12 @@ const ChatScreen = ({ route, navigation }) => {
             };
             setMessages(prev => [...prev, aiMessage]);
         } catch (error) {
-            console.error('Chat Error:', error);
+            console.error('API Error Details:', {
+                url: `${API_URL}/chat`,
+                status: error.response?.status,
+                data: error.response?.data,
+                message: error.message
+            });
             const errorMessage = {
                 id: Date.now() + 1,
                 text: "Pole sana! I'm having trouble connecting right now. Please check your data or try again.",

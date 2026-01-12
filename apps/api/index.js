@@ -4,6 +4,13 @@ const compression = require('compression');
 const OpenAI = require('openai');
 require('dotenv').config();
 
+console.log('Sungura API Initializing...');
+if (process.env.OPENROUTER_API_KEY) {
+  console.log(`API Key detected (starts with: ${process.env.OPENROUTER_API_KEY.substring(0, 10)}...)`);
+} else {
+  console.error('WARNING: OPENROUTER_API_KEY is missing!');
+}
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -28,7 +35,24 @@ router.get('/', (req, res) => {
 });
 
 router.get('/health', (req, res) => {
-  res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
+  res.status(200).json({
+    status: 'OK',
+    timestamp: new Date().toISOString(),
+    apiKeySet: !!process.env.OPENROUTER_API_KEY,
+    url: req.url
+  });
+});
+
+router.get('/debug', (req, res) => {
+  res.json({
+    env: process.env.NODE_ENV,
+    apiKeySet: !!process.env.OPENROUTER_API_KEY,
+    apiKeyPrefix: process.env.OPENROUTER_API_KEY ? process.env.OPENROUTER_API_KEY.substring(0, 10) : 'none',
+    headers: req.headers,
+    url: req.url,
+    method: req.method,
+    originalUrl: req.originalUrl
+  });
 });
 
 // Simple Browser Test Page
@@ -171,8 +195,10 @@ ${styleInstruction}
 });
 
 // Mount router at root AND /api to handle Netlify rewrites correctly
+// Mount router at root AND /api AND the internal Netlify function path
 app.use('/', router);
 app.use('/api', router);
+app.use('/.netlify/functions/api', router);
 
 // Export the app for serverless
 module.exports.app = app;
