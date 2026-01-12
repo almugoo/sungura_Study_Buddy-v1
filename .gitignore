@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+.tmp/
+
+# Environment variables
+.env
+.env*.local
+
+# Cache and logs
+__pycache__/
+*.pyc
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# IDEs and OS
+.vscode/
+.idea/
+.DS_Store
+*.pem
+
+# Expo (Mobile)
+apps/mobile/.expo/
+apps/mobile/dist/
+apps/mobile/web-build/
+apps/mobile/expo-env.d.ts
+apps/mobile/.kotlin/
+apps/mobile/*.orig.*
+apps/mobile/*.jks
+apps/mobile/*.p8
+apps/mobile/*.p12
+apps/mobile/*.key
+apps/mobile/*.mobileprovision
+apps/mobile/.metro-health-check*
+apps/mobile/*.tsbuildinfo
+apps/mobile/ios/
+apps/mobile/android/
+
+# API
+apps/api/dist/
+apps/api/build/
