@@ -69,10 +69,12 @@ const ChatScreen = ({ route, navigation }) => {
 
         try {
             const response = await axios.post(`${API_URL}/chat`, {
-                message: currentText,
-                image: currentImage?.base64,
+                message: inputText,
+                image: selectedImage?.base64,
                 courseContext: route.params?.courseName || 'General',
                 learningStyle: userData.learningStyle || 'Standard'
+            }, {
+                timeout: 90000 // Increase to 90 seconds for slow free models
             });
 
             const aiMessage = {
@@ -83,15 +85,16 @@ const ChatScreen = ({ route, navigation }) => {
             };
             setMessages(prev => [...prev, aiMessage]);
         } catch (error) {
-            console.error('API Error Details:', {
+            console.error('Detailed API Error:', {
                 url: `${API_URL}/chat`,
-                status: error.response?.status,
-                data: error.response?.data,
-                message: error.message
+                statusCode: error.response?.status,
+                statusText: error.response?.statusText,
+                responseData: error.response?.data,
+                errorMessage: error.message
             });
             const errorMessage = {
                 id: Date.now() + 1,
-                text: "Pole sana! I'm having trouble connecting right now. Please check your data or try again.",
+                text: `Pole sana! I'm having trouble connecting right now (Error: ${error.response?.status || 'Timeout'}). Please check your data or try again.`,
                 sender: 'ai',
                 timestamp: new Date()
             };
