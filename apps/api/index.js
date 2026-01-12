@@ -173,7 +173,10 @@ ${styleInstruction}
     }
 
     // Default to a multi-modal model if an image is sent
-    const model = image ? "anthropic/claude-3-sonnet" : "nvidia/nemotron-nano-9b-v2:free";
+    // Using gemini-flash-1.5:free as it is significantly faster for Netlify's 10s timeout
+    const model = image ? "anthropic/claude-3-sonnet" : "google/gemini-flash-1.5:free";
+
+    console.log(`[POST /chat] Calling model: ${model} with message length: ${message?.length || 0}`);
 
     const completion = await openai.chat.completions.create({
       model: model,
