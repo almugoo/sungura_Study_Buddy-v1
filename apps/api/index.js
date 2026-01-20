@@ -2,7 +2,9 @@ const express = require('express');
 const cors = require('cors');
 const compression = require('compression');
 const OpenAI = require('openai');
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
+
 
 console.log('Sungura API Initializing...');
 if (process.env.OPENROUTER_API_KEY) {
