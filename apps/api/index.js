@@ -232,10 +232,15 @@ ${styleInstruction}
       usage: completion.usage
     });
   } catch (error) {
-    console.error('Error calling OpenRouter or Supabase:', error.message);
+    console.error('=== CHAT ENDPOINT ERROR ===');
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+    console.error('Error name:', error.name);
+    console.error('Request body:', { message, image: !!image, courseContext, learningStyle, userId });
     res.status(500).json({
       error: 'Failed to get response from AI',
-      details: error.message
+      details: error.message,
+      errorType: error.name
     });
   }
 });
