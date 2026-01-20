@@ -23,8 +23,8 @@ const openai = new OpenAI({
     "HTTP-Referer": "https://sunguraai.netlify.app", // Required for some free models
     "X-Title": "Sungura AI Study Buddy",
   },
-  timeout: 60000,
-  maxRetries: 2,
+  timeout: 8000,
+  maxRetries: 1,
 });
 
 // Middleware
