@@ -37,12 +37,15 @@ const QUIZ_QUESTIONS = [
     },
 ];
 
+import { supabase } from '../supabaseClient';
+
 const LearningStyleQuizScreen = ({ navigation }) => {
     const theme = useTheme();
     const { updateUser } = useUser();
     const [currentIndex, setCurrentIndex] = useState(0);
     const [answers, setAnswers] = useState({});
     const [selectedOption, setSelectedOption] = useState(null);
+    const [loading, setLoading] = useState(false);
 
     const progress = (currentIndex + 1) / QUIZ_QUESTIONS.length;
     const currentQuestion = QUIZ_QUESTIONS[currentIndex];
@@ -59,15 +62,36 @@ const LearningStyleQuizScreen = ({ navigation }) => {
         }
     };
 
-    const calculateResults = (finalAnswers) => {
-        const counts = { Visual: 0, Auditory: 0, "Reading/Writing": 0, Kinesthetic: 0 };
-        Object.values(finalAnswers).forEach(style => {
-            counts[style]++;
-        });
+    const calculateResults = async (finalAnswers) => {
+        setLoading(true);
+        try {
+            const counts = { Visual: 0, Auditory: 0, "Reading/Writing": 0, Kinesthetic: 0 };
+            Object.values(finalAnswers).forEach(style => {
+                counts[style]++;
+            });
 
-        const dominantStyle = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
-        updateUser({ learningStyle: dominantStyle, onboarded: true });
-        navigation.navigate('Dashboard');
+            const dominantStyle = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
+
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                const { error } = await supabase
+                    .from('profiles')
+                    .update({
+                        learning_style: dominantStyle,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', user.id);
+
+                if (error) throw error;
+            }
+
+            updateUser({ learningStyle: dominantStyle, onboarded: true });
+            navigation.navigate('Dashboard');
+        } catch (err) {
+            console.error('Error updating learning style:', err.message);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -116,7 +140,8 @@ const LearningStyleQuizScreen = ({ navigation }) => {
                         <Button
                             mode="contained"
                             onPress={handleNext}
-                            disabled={!selectedOption}
+                            loading={loading}
+                            disabled={!selectedOption || loading}
                             style={styles.button}
                             contentStyle={styles.buttonContent}
                         >

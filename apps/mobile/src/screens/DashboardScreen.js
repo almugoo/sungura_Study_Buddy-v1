@@ -70,11 +70,11 @@ const DashboardScreen = ({ navigation }) => {
                 {/* Gamification Stats */}
                 <View style={styles.statsRow}>
                     <Surface style={styles.statCard} elevation={1}>
-                        <Text variant="displaySmall" style={[styles.statValue, { color: '#FF8C00' }]}>🔥 5</Text>
+                        <Text variant="displaySmall" style={[styles.statValue, { color: '#FF8C00' }]}>🔥 {userData.streak || 0}</Text>
                         <Text variant="labelLarge">DAY STREAK</Text>
                     </Surface>
                     <Surface style={styles.statCard} elevation={1}>
-                        <Text variant="displaySmall" style={[styles.statValue, { color: theme.colors.primary }]}>✨ 450</Text>
+                        <Text variant="displaySmall" style={[styles.statValue, { color: theme.colors.primary }]}>✨ {userData.points || 0}</Text>
                         <Text variant="labelLarge">TOTAL POINTS</Text>
                     </Surface>
                 </View>
@@ -82,7 +82,7 @@ const DashboardScreen = ({ navigation }) => {
                 <View style={styles.section}>
                     <View style={styles.sectionHeader}>
                         <Text variant="titleLarge" style={styles.sectionTitle}>My Courses</Text>
-                        <Button mode="text" labelStyle={{ fontSize: 14 }}>See All</Button>
+                        <Button mode="text" labelStyle={{ fontSize: 14 }} onPress={() => navigation.navigate('AllCourses')}>See All</Button>
                     </View>
                     <View style={styles.courseGrid}>
                         {userCourses.map((code, index) => (

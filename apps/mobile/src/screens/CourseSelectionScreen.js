@@ -13,11 +13,14 @@ const COMMON_COURSES = [
     { id: '6', code: 'BIO 101', name: 'General Biology' },
 ];
 
+import { supabase } from '../supabaseClient';
+
 const CourseSelectionScreen = ({ navigation }) => {
     const theme = useTheme();
     const { updateUser } = useUser();
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCourses, setSelectedCourses] = useState([]);
+    const [loading, setLoading] = useState(false);
 
     const toggleCourse = (course) => {
         if (selectedCourses.find(c => c.id === course.id)) {
@@ -27,10 +30,29 @@ const CourseSelectionScreen = ({ navigation }) => {
         }
     };
 
-    const handleContinue = () => {
+    const handleContinue = async () => {
         if (selectedCourses.length >= 3) {
-            updateUser({ courses: selectedCourses.map(c => c.code) });
-            navigation.navigate('LearningStyleQuiz');
+            setLoading(true);
+            try {
+                const courseCodes = selectedCourses.map(c => c.code);
+                const { data: { user } } = await supabase.auth.getUser();
+
+                if (user) {
+                    const { error } = await supabase
+                        .from('profiles')
+                        .update({ courses: courseCodes })
+                        .eq('id', user.id);
+
+                    if (error) throw error;
+                }
+
+                updateUser({ courses: courseCodes });
+                navigation.navigate('LearningStyleQuiz');
+            } catch (err) {
+                console.error('Error updating courses:', err.message);
+            } finally {
+                setLoading(false);
+            }
         }
     };
 
@@ -106,7 +128,8 @@ const CourseSelectionScreen = ({ navigation }) => {
                     <Button
                         mode="contained"
                         onPress={handleContinue}
-                        disabled={selectedCourses.length < 3}
+                        loading={loading}
+                        disabled={selectedCourses.length < 3 || loading}
                         style={styles.button}
                         contentStyle={styles.buttonContent}
                     >

@@ -9,6 +9,7 @@ import CourseSelectionScreen from '../screens/CourseSelectionScreen';
 import LearningStyleQuizScreen from '../screens/LearningStyleQuizScreen';
 import DashboardScreen from '../screens/DashboardScreen';
 import ChatScreen from '../screens/ChatScreen';
+import AllCoursesScreen from '../screens/AllCoursesScreen';
 import { useUser } from '../context/UserContext';
 
 const Stack = createNativeStackNavigator();
@@ -39,6 +40,7 @@ const AppNavigator = () => {
                 <Stack.Screen name="CourseSelection" component={CourseSelectionScreen} />
                 <Stack.Screen name="LearningStyleQuiz" component={LearningStyleQuizScreen} />
                 <Stack.Screen name="Dashboard" component={DashboardScreen} />
+                <Stack.Screen name="AllCourses" component={AllCoursesScreen} />
                 <Stack.Screen name="Chat" component={ChatScreen} />
             </Stack.Navigator>
         </NavigationContainer>

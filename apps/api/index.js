@@ -122,13 +122,28 @@ router.get('/chat', (req, res) => {
 });
 
 router.post('/chat', async (req, res) => {
-  const { message, image, courseContext, learningStyle } = req.body;
+  const { message, image, courseContext, learningStyle, userId } = req.body;
 
   if (!message && !image) {
     return res.status(400).json({ error: 'Message or image is required' });
   }
 
+  // Import supabase client dynamically to avoid issues if not configured
+  const { supabase } = require('./supabaseClient');
+
   try {
+    // 1. Save User Message to Supabase if userId is present
+    if (userId && supabase) {
+      await supabase.from('chats').insert([
+        {
+          user_id: userId,
+          role: 'user',
+          content: message || '[Image Attachment]',
+          course_context: courseContext
+        }
+      ]);
+    }
+
     let styleInstruction = "";
     if (learningStyle === 'Visual') {
       styleInstruction = "\n- Use Mermaid syntax for flowcharts (e.g., ```mermaid ... ```).";
@@ -160,10 +175,16 @@ ${styleInstruction}
 - Add blank lines between sections for readability
 - If explaining a concept, structure it as: Definition → Explanation → Example
 
+## OCR & Document Parsing Instructions
+- If an image is provided, your priority is to **extract and summarize** the academic content.
+- For handwritten notes: Be patient with handwriting, transcribe clearly, and identify key terms.
+- For textbooks/diagrams: Explain the relationships shown in the images (e.g., "The diagram shows the nitrogen cycle...").
+- Format the extracted text into a structured study guide.
+
 ## Important
 - Be concise but thorough
 - Focus on academic excellence
-- If an image is provided, describe and explain its content`;
+- If an image is provided, describe and explain its content in detail, then offer to quiz the user on it.`
 
     let userContent = [];
     if (message) {
@@ -177,7 +198,6 @@ ${styleInstruction}
     }
 
     // Default to a multi-modal model if an image is sent
-    // Switching to the specific free Gemini 2.0 Flash model ID
     const model = image ? "anthropic/claude-3-sonnet" : "google/gemini-2.0-flash-exp:free";
 
     console.log(`[POST /chat] Calling model: ${model} with message length: ${message?.length || 0}`);
@@ -191,12 +211,26 @@ ${styleInstruction}
       temperature: 0.7,
     });
 
+    const aiResponse = completion.choices[0].message.content;
+
+    // 2. Save AI Response to Supabase if userId is present
+    if (userId && supabase) {
+      await supabase.from('chats').insert([
+        {
+          user_id: userId,
+          role: 'assistant',
+          content: aiResponse,
+          course_context: courseContext
+        }
+      ]);
+    }
+
     res.json({
-      response: completion.choices[0].message.content,
+      response: aiResponse,
       usage: completion.usage
     });
   } catch (error) {
-    console.error('Error calling OpenRouter:', error.message);
+    console.error('Error calling OpenRouter or Supabase:', error.message);
     res.status(500).json({
       error: 'Failed to get response from AI',
       details: error.message

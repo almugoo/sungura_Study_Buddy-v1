@@ -8,8 +8,8 @@ import * as ImagePicker from 'expo-image-picker';
 import { useUser } from '../context/UserContext';
 import MermaidRenderer from '../components/MermaidRenderer';
 
-// Target Local API in Dev, Relative Path in Prod (Netlify)
-const API_URL = __DEV__ ? 'http://localhost:3000' : '/api';
+// API URL: Uses env variable, falls back to Netlify production URL
+const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://sunguraai.netlify.app/api';
 
 const ChatScreen = ({ route, navigation }) => {
     const theme = useTheme();
@@ -39,7 +39,7 @@ const ChatScreen = ({ route, navigation }) => {
         const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
-            quality: 0.5,
+            quality: 0.8, // Increased quality for better OCR accuracy
             base64: true,
         });
 
@@ -72,7 +72,8 @@ const ChatScreen = ({ route, navigation }) => {
                 message: inputText,
                 image: selectedImage?.base64,
                 courseContext: route.params?.courseName || 'General',
-                learningStyle: userData.learningStyle || 'Standard'
+                learningStyle: userData.learningStyle || 'Standard',
+                userId: userData.id
             }, {
                 timeout: 90000 // Increase to 90 seconds for slow free models
             });
@@ -191,7 +192,9 @@ const ChatScreen = ({ route, navigation }) => {
                             <Surface style={[styles.messageBubble, styles.aiBubble]} elevation={1}>
                                 <View style={styles.typingContainer}>
                                     <ActivityIndicator size="small" color={theme.colors.primary} />
-                                    <Text variant="bodySmall" style={styles.typingText}>Sungura anafikiria...</Text>
+                                    <Text variant="bodySmall" style={styles.typingText}>
+                                        {messages[messages.length - 1]?.image ? 'Sungura anachambua picha yako...' : 'Sungura anafikiria...'}
+                                    </Text>
                                 </View>
                             </Surface>
                         </View>

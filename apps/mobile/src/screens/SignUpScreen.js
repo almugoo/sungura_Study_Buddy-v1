@@ -3,14 +3,7 @@ import { View, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-nat
 import { Text, TextInput, Button, useTheme, HelperText } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-// MOCK AUTH: Bypassing Firebase for now
-const mockSignUp = async (email, password) => {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            resolve({ user: { email: email, displayName: 'Test User' } });
-        }, 1000); // Simulate network delay
-    });
-};
+import { supabase } from '../supabaseClient';
 
 const SignUpScreen = ({ navigation }) => {
     const theme = useTheme();
@@ -30,17 +23,44 @@ const SignUpScreen = ({ navigation }) => {
         setError('');
 
         try {
-            // MOCK CALL
-            const user = await mockSignUp(email, password);
+            // 1. Sign up user with Supabase Auth
+            const { data, error: signUpError } = await supabase.auth.signUp({
+                email,
+                password,
+                options: {
+                    data: {
+                        full_name: name,
+                    }
+                }
+            });
 
-            console.log('MOCK User registered:', user.user.email);
-            Alert.alert("Success", "Account created successfully (Mock Mode)!");
+            if (signUpError) throw signUpError;
 
-            // Navigate to next step (University Selection)
-            navigation.navigate('UniversitySelection');
+            if (data?.user) {
+                // 2. Create initial profile entry
+                const { error: profileError } = await supabase
+                    .from('profiles')
+                    .insert([
+                        {
+                            id: data.user.id,
+                            full_name: name,
+                        }
+                    ]);
+
+                if (profileError) {
+                    console.error('Error creating profile:', profileError);
+                    // We don't throw here to allow navigation even if profile insert fails 
+                    // (User is still authenticated)
+                }
+
+                Alert.alert("Success", "Account created successfully! Please check your email for verification.");
+
+                // Navigate to next step (University Selection)
+                navigation.navigate('UniversitySelection');
+            }
         } catch (err) {
-            console.error(err);
-            setError("An error occurred during sign up.");
+            console.error('Sign up error:', err.message);
+            setError(err.message || "An error occurred during sign up.");
         } finally {
             setLoading(false);
         }

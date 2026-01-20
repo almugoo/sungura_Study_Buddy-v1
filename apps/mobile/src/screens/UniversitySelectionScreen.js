@@ -15,20 +15,40 @@ const UNIVERSITIES = [
     { id: '8', name: 'United States International University Africa', country: 'Kenya' },
 ];
 
+import { supabase } from '../supabaseClient';
+
 const UniversitySelectionScreen = ({ navigation }) => {
     const theme = useTheme();
     const { updateUser } = useUser();
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedUniv, setSelectedUniv] = useState(null);
+    const [loading, setLoading] = useState(false);
 
     const filteredUniversities = UNIVERSITIES.filter(univ =>
         univ.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const handleContinue = () => {
+    const handleContinue = async () => {
         if (selectedUniv) {
-            updateUser({ university: selectedUniv.name });
-            navigation.navigate('CourseSelection'); // Next step
+            setLoading(true);
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user) {
+                    const { error } = await supabase
+                        .from('profiles')
+                        .update({ university: selectedUniv.name })
+                        .eq('id', user.id);
+
+                    if (error) throw error;
+                }
+
+                updateUser({ university: selectedUniv.name });
+                navigation.navigate('CourseSelection');
+            } catch (err) {
+                console.error('Error updating university:', err.message);
+            } finally {
+                setLoading(false);
+            }
         }
     };
 
@@ -78,7 +98,8 @@ const UniversitySelectionScreen = ({ navigation }) => {
                     <Button
                         mode="contained"
                         onPress={handleContinue}
-                        disabled={!selectedUniv}
+                        loading={loading}
+                        disabled={!selectedUniv || loading}
                         style={styles.button}
                         contentStyle={styles.buttonContent}
                     >
