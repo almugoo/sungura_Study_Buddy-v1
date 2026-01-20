@@ -102,7 +102,7 @@ router.get('/chat', (req, res) => {
             chat.scrollTop = chat.scrollHeight;
             
             try {
-                const res = await fetch('/chat', {
+                const res = await fetch('/api/chat', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ message: msg, learningStyle: 'Visual', courseContext: 'General' })
